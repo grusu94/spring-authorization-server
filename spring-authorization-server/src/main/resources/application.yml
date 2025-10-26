@@ -1,30 +1,43 @@
 spring:
   application:
     name: oauth2-server
-  security:
-    user:
-      name: admin
-      password: admin
+
 server:
   port: 9090
+  ssl:
+    key-store: classpath:keystore.jks
+    keystore-password: changeit
+    key-password: changeit
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
 
 oauth2:
+  jwt-keystore-path: keystore.jks
+  jwt-key-pair: mykey
+  jwt-keystore-password: changeit
   clients:
     client1:
       accessTokenValiditySeconds: 86400
       authorizedGrantTypes: refresh_token,password,custom_trusted
-      clientSecret: abcdefgh1234
+      clientSecret: "abcdefgh1234"
       refreshTokenValiditySeconds: 2592000
       scope: client1,role.create
     client2:
       accessTokenValiditySeconds: 86400
       authorizedGrantTypes: authorization_code,refresh_token,password,custom_trusted
-      clientSecret: abcdefgh1234
+      clientSecret: "abcdefgh1235"
       refreshTokenValiditySeconds: 2592000
       scope: role.create
     client3:
       accessTokenValiditySeconds: 86400
       authorizedGrantTypes: authorization_code,refresh_token,password,client_credentials
-      clientSecret: abcdefgh1234
+      clientSecret: "abcdefgh1236"
       refreshTokenValiditySeconds: 2592000
       scope: client3,role.create
