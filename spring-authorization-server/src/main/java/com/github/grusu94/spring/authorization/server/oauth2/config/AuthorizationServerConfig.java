@@ -28,6 +28,9 @@ import org.springframework.security.oauth2.server.authorization.web.authenticati
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2RefreshTokenAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationConverter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.List;
 
@@ -41,7 +44,7 @@ public class AuthorizationServerConfig {
         this.clientsProperties = clientsProperties;
     }
 
-    @Bean
+    @Bean("authorizationSecurityFilterChain")
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
                                                                       OAuth2AuthorizationService authorizationService,
@@ -67,11 +70,17 @@ public class AuthorizationServerConfig {
 
         http.apply(authorizationServerConfigurer);
 
+        RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
+        RequestMatcher customMatcher = new AntPathRequestMatcher("/api/users/oauth/token", "POST");
+
+        RequestMatcher combinedMatcher = new OrRequestMatcher(endpointsMatcher, customMatcher);
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
+                .securityMatcher(combinedMatcher)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/oauth2/token").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/oauth/token").permitAll()
                         .anyRequest().authenticated()
                 );
 
